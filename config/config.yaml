@@ -1,0 +1,40 @@
+Server:
+  RunMode: debug # 可选值：debug, release, test
+  HttpPort: 8080
+  ReadTimeout: 60 # 单位：秒
+  WriteTimeout: 60 # 单位：秒
+
+App:
+  DefaultPageSize: 10
+  MaxPageSize: 100
+  LogFilePath: ./logs/app.log
+  LogFileMaxSize: 50 # 单位：MB
+  LogFileMaxAge: 30 # 单位：天
+  LogFileMaxBackups: 7 # 保留的最大备份数量
+  LogLevel: debug
+  JWT:
+    Secret: ${JWT_SECRET} # 从环境变量中注入
+    Issuer: blog-service
+    ExpireTime: 3600 # 单位：秒
+
+
+Database:
+  MySQL:
+    UserName: root
+    Password: ${MYSQL_PASSWORD} # 从环境变量中注入
+    Address: ${MYSQL_ADDR}
+    DBName: blog_service
+    TablePrefix: blog_
+    Charset: utf8mb4 # 使用 utf8mb4 支持更多字符集
+    ParseTime: true # 必须小写
+    MaxIdleConns: 10
+    MaxOpenConns: 100
+    MinIdleConns: 5 
+  Redis:
+    Address: ${REDIS_ADDR}
+    Password: ${REDIS_PASSWORD} # 从环境变量中注入
+    DB: 0
+    PoolSize: 100 # 连接池大小（单位：连接数）
+    MaxIdleConns: 10 # 最大空闲连接数
+    MaxOpenConns: 100 # 最大连接数
+    MinIdleConns: 5 # 最小空闲连接数
