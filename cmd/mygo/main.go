@@ -1,19 +1,16 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"mygo/config"
+	"mygo/pkg/logger"
+)
 
 func main() {
+	config.LoadSetting()
+	AppSetting := config.AppSetting
+	logger.InitLogger()
 
-	r := gin.Default()
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
-	err := r.Run(":8080")
-	if err != nil {
-		return
-	}
+	gin.SetMode(AppSetting.Server.RunMode)
+	logger.Logger.Infof("Starting service %s", AppSetting.Server.HttpPort)
 }

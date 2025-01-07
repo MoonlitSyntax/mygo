@@ -16,14 +16,16 @@ type Setting struct {
 		WriteTimeout int
 	}
 	App struct {
-		DefaultPageSize   int
-		MaxPageSize       int
-		LogFilePath       string
-		LogFileMaxSize    int
-		LogFileMaxAge     int
-		LogFileMaxBackups int
-		LogLevel          string
-		JWT               struct {
+		DefaultPageSize int
+		MaxPageSize     int
+		Logger          struct {
+			LogFilePath       string
+			LogFileMaxSize    int
+			LogFileMaxAge     int
+			LogFileMaxBackups int
+			LogLevel          string
+		}
+		JWT struct {
 			Secret     string
 			Issuer     string
 			ExpireTime int
@@ -56,12 +58,12 @@ type Setting struct {
 var AppSetting = &Setting{}
 
 func LoadSetting() {
-	if err := godotenv.Load("./internal/config/.env"); err != nil {
+	if err := godotenv.Load("./config/.env"); err != nil {
 		log.Println("未找到 .env 文件，尝试使用系统环境变量")
 	}
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./internal/config/")
+	viper.AddConfigPath("./config/")
 
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -82,4 +84,5 @@ func LoadSetting() {
 	AppSetting.Database.Redis.Password = os.Getenv("REDIS_PASSWORD")
 	AppSetting.Database.Redis.Address = os.Getenv("REDIS_ADDR")
 
+	log.Println("配置文件加载完成")
 }

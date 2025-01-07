@@ -7,11 +7,12 @@ Server:
 App:
   DefaultPageSize: 10
   MaxPageSize: 100
-  LogFilePath: ./logs/app.log
-  LogFileMaxSize: 50 # 单位：MB
-  LogFileMaxAge: 30 # 单位：天
-  LogFileMaxBackups: 7 # 保留的最大备份数量
-  LogLevel: debug
+  Logger:
+    LogFilePath: ./logs/app.log
+    LogFileMaxSize: 50 # 单位：MB
+    LogFileMaxAge: 30 # 单位：天
+    LogFileMaxBackups: 7 # 保留的最大备份数量
+    LogLevel: debug
   JWT:
     Secret: ${JWT_SECRET} # 从环境变量中注入
     Issuer: blog-service
@@ -29,7 +30,7 @@ Database:
     ParseTime: true # 必须小写
     MaxIdleConns: 10
     MaxOpenConns: 100
-    MinIdleConns: 5 
+    MinIdleConns: 5
   Redis:
     Address: ${REDIS_ADDR}
     Password: ${REDIS_PASSWORD} # 从环境变量中注入

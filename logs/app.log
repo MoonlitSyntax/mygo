@@ -1,0 +1,11 @@
+{"level":"INFO","timestamp":"2025-01-08T00:10:09.162+0800","caller":"runtime/proc.go:272","msg":"服务启动完毕"}
+{"level":"INFO","timestamp":"2025-01-08T00:19:35.699+0800","caller":"runtime/proc.go:272","msg":"服务启动完毕"}
+{"level":"INFO","timestamp":"2025-01-08T00:26:01.285+0800","caller":"runtime/proc.go:272","msg":"服务启动完毕"}
+{"level":"INFO","timestamp":"2025-01-08T00:30:36.293+0800","caller":"runtime/proc.go:272","msg":"server run mode","mode":"debug"}
+{"level":"INFO","timestamp":"2025-01-08T00:31:03.675+0800","caller":"runtime/asm_arm64.s:1223","msg":"server run mode","mode":"debug"}
+{"level":"INFO","timestamp":"2025-01-08T00:41:08.400+0800","caller":"runtime/proc.go:272","msg":"Starting service %!s(int=8080)"}
+{"level":"INFO","timestamp":"2025-01-08T00:43:24.469+0800","msg":"Starting service %!s(int=8080)"}
+{"level":"INFO","timestamp":"2025-01-08T00:50:14.587+0800","caller":"runtime/proc.go:272","msg":"Starting service %!s(int=8080)"}
+{"level":"INFO","timestamp":"2025-01-08T00:50:37.874+0800","msg":"Starting service %!s(int=8080)"}
+{"level":"INFO","timestamp":"2025-01-08T00:50:48.058+0800","msg":"Starting service %!s(int=8080)"}
+{"level":"INFO","timestamp":"2025-01-08T01:00:13.803+0800","caller":"mygo/main.go:15","msg":"Starting service %!s(int=8080)"}
