@@ -4,7 +4,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -44,13 +43,14 @@ type Setting struct {
 			ParseTime    bool
 			MaxIdleConns int
 			MaxOpenConns int
-			MinIdleConns int
 		}
 		Redis struct {
-			Address  string
-			Password string
-			DB       int
-			PoolSize int
+			Address      string
+			Password     string
+			DB           int
+			PoolSize     int
+			MaxIdleConns int
+			MaxOpenConns int
 		}
 	}
 }
@@ -74,15 +74,29 @@ func LoadSetting() {
 
 	AppSetting = &Setting{}
 
+	err := viper.BindEnv("Database.MySQL.Password", "MYSQL_PASSWORD")
+	if err != nil {
+		return
+	}
+	err = viper.BindEnv("Database.MySQL.Address", "MYSQL_ADDR")
+	if err != nil {
+		return
+	}
+	err = viper.BindEnv("Database.Redis.Password", "REDIS_PASSWORD")
+	if err != nil {
+		return
+	}
+	err = viper.BindEnv("Database.Redis.Address", "REDIS_ADDR")
+	if err != nil {
+		return
+	}
+	err = viper.BindEnv("Database.Redis.Address", "JWT_SECRET")
+	if err != nil {
+		return
+	}
 	if err := viper.Unmarshal(AppSetting); err != nil {
 		log.Fatalf("无法解析配置: %v", err)
 	}
-
-	AppSetting.App.JWT.Secret = os.Getenv("JWT_SECRET")
-	AppSetting.Database.MySQL.Password = os.Getenv("MYSQL_PASSWORD")
-	AppSetting.Database.MySQL.Address = os.Getenv("MYSQL_ADDR")
-	AppSetting.Database.Redis.Password = os.Getenv("REDIS_PASSWORD")
-	AppSetting.Database.Redis.Address = os.Getenv("REDIS_ADDR")
 
 	log.Println("配置文件加载完成")
 }

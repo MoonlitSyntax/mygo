@@ -43,7 +43,6 @@ func InitLogger() {
 		zap.AddStacktrace(zapcore.ErrorLevel),
 	)
 
-	// 转换为 SugaredLogger
 	Logger = logger.Sugar()
 }
 

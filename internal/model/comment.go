@@ -1,9 +1,7 @@
 package model
 
-import "gorm.io/gorm"
-
 type Comment struct {
-	gorm.Model
+	GormModel
 	ArticleID uint    `gorm:"not null" json:"article_id"`
 	Article   Article `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"article"`
 
