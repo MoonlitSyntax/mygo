@@ -1,35 +1,58 @@
 package repository
 
 import (
-	"errors"
-	"mygo/internal/db"
+	"gorm.io/gorm"
 	"mygo/internal/model"
 )
 
-func CreateUser(user *model.User) error {
-	if user.Username == "" || user.Password == "" || user.Email == "" {
-		return errors.New("用户名 密码 邮箱 不能为空")
+type UserRepository interface {
+	CreateUser(username, password, email, role string) error
+	DeleteUser(id uint) error
+	UpdateUser(id uint, update map[string]interface{}) error
+	GetUserById(id uint) (*model.User, error)
+	CountUser() (int64, error)
+}
+
+type userRepository struct {
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepository{db: db}
+}
+func (r *userRepository) CreateUser(username, password, email, role string) error {
+
+	user := &model.User{
+		Email:    email,
+		Username: username,
+		Password: password,
+		Role:     role,
 	}
-	return db.DB.Create(&user).Error
+	return r.db.Create(user).Error
 }
 
-func DeleteUserById(id uint) error {
-	return db.DB.Delete(&model.User{}, id).Error
+func (r *userRepository) DeleteUser(id uint) error {
+	return r.db.Delete(&model.User{}, id).Error
 }
 
-func UpdateUser(id uint, update map[string]interface{}) error {
-	if len(update) == 0 {
-		return errors.New("用户更新空字段")
-	}
-
-	return db.DB.Where("id = ?", id).Updates(update).Error
+func (r *userRepository) UpdateUser(id uint, update map[string]interface{}) error {
+	return r.db.Where("id = ?", id).Updates(update).Error
 }
 
-func GetUserById(id uint) (*model.User, error) {
+func (r *userRepository) GetUserById(id uint) (*model.User, error) {
 	var user model.User
-	err := db.DB.First(&user, id).Error
+	err := r.db.First(&user, id).Error
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *userRepository) CountUser() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.User{}).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

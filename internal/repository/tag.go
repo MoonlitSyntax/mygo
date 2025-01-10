@@ -1,50 +1,70 @@
 package repository
 
 import (
-	"errors"
-	"mygo/internal/db"
+	"gorm.io/gorm"
 	"mygo/internal/model"
 )
 
-func CreateTag(t *model.Tag) error {
-	if t.Name == "" {
-		return errors.New("标签名不能为空")
-	}
-	res := db.DB.Create(t)
-	return res.Error
+type TagRepository interface {
+	CreateTag(name string) error
+	DeleteTag(id uint) error
+	UpdateTag(id uint, name string) error
+	GetTagById(id uint) (*model.Tag, error)
+	GetTagsByPage(limit, offset int) ([]model.Tag, error)
+	GetAllTags() ([]model.Tag, error)
+	CountTag() (int64, error)
+}
+type tagRepository struct {
+	db *gorm.DB
 }
 
-func DeleteTagById(id uint) error {
-	return db.DB.Delete(&model.Tag{}, id).Error
+func NewTagRepository(db *gorm.DB) TagRepository {
+	return &tagRepository{db: db}
+}
+func (r *tagRepository) CreateTag(name string) error {
+	tag := model.Tag{Name: name}
+	return r.db.Create(&tag).Error
 }
 
-func UpdateTag(id uint, name string) error {
-	return db.DB.Model(&model.Tag{}).Where("id = ?", id).Update("name", name).Error
+func (r *tagRepository) DeleteTag(id uint) error {
+	return r.db.Delete(&model.Tag{}, id).Error
 }
 
-func GetTagById(id uint) (*model.Tag, error) {
+func (r *tagRepository) UpdateTag(id uint, name string) error {
+	return r.db.Model(&model.Tag{}).Where("id = ?", id).Update("name", name).Error
+}
+
+func (r *tagRepository) GetTagById(id uint) (*model.Tag, error) {
 	var tag model.Tag
-	err := db.DB.First(&tag, id).Error
+	err := r.db.First(&tag, id).Error
 	if err != nil {
 		return nil, err
 	}
 	return &tag, nil
 }
 
-func GetTagsByPage(limit, offset int) ([]model.Tag, error) {
+func (r *tagRepository) GetTagsByPage(limit, offset int) ([]model.Tag, error) {
 	var tags []model.Tag
-	err := db.DB.Limit(limit).Offset(offset).Find(&tags).Error
+	err := r.db.Limit(limit).Offset(offset).Find(&tags).Error
 	if err != nil {
 		return nil, err
 	}
 	return tags, nil
 }
 
-func GetAllTags() ([]model.Tag, error) {
+func (r *tagRepository) GetAllTags() ([]model.Tag, error) {
 	var tags []model.Tag
-	err := db.DB.Find(&tags).Error
+	err := r.db.Find(&tags).Error
 	if err != nil {
 		return nil, err
 	}
 	return tags, nil
+}
+func (r *tagRepository) CountTag() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Tag{}).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

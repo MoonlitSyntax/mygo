@@ -38,3 +38,11 @@ func (ct CustomTime) Value() (driver.Value, error) {
 	}
 	return t, nil
 }
+
+func (ct CustomTime) String() string {
+	t := time.Time(ct)
+	if t.IsZero() {
+		return "null"
+	}
+	return t.Format("2006-01-02 15:04:05")
+}
