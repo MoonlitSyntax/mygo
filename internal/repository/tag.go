@@ -10,7 +10,6 @@ type TagRepository interface {
 	DeleteTag(id uint) error
 	UpdateTag(id uint, name string) error
 	GetTagById(id uint) (*model.Tag, error)
-	GetTagsByPage(limit, offset int) ([]model.Tag, error)
 	GetAllTags() ([]model.Tag, error)
 	CountTag() (int64, error)
 }
@@ -41,15 +40,6 @@ func (r *tagRepository) GetTagById(id uint) (*model.Tag, error) {
 		return nil, err
 	}
 	return &tag, nil
-}
-
-func (r *tagRepository) GetTagsByPage(limit, offset int) ([]model.Tag, error) {
-	var tags []model.Tag
-	err := r.db.Limit(limit).Offset(offset).Find(&tags).Error
-	if err != nil {
-		return nil, err
-	}
-	return tags, nil
 }
 
 func (r *tagRepository) GetAllTags() ([]model.Tag, error) {

@@ -43,6 +43,9 @@ type ArticleResponse struct {
 }
 
 type ArticleListResponse struct {
-	Articles []ArticleResponse `json:"articles"` // 文章列表
-	Total    int               `json:"total"`    // 总数
+	Articles []ArticleResponse `json:"articles"`  // 文章列表
+	Total    int               `json:"total"`     // 符合条件的总数
+	Page     int               `json:"page"`      // 当前第几页（可选）
+	PageSize int               `json:"page_size"` // 每页条数（可选）
+
 }

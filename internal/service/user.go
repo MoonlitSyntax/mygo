@@ -1,9 +1,9 @@
 package service
 
 import (
-	"fmt"
 	"mygo/internal/dto"
 	"mygo/internal/repository"
+	"mygo/pkg/bizerrors"
 )
 
 type UserService interface {
@@ -22,12 +22,17 @@ func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-// CreateUser 创建用户
 func (s *userService) CreateUser(req dto.CreateUserRequest) error {
-	return s.repo.CreateUser(req.Username, req.Password, req.Email, req.Role)
+	err := s.repo.CreateUser(req.Username, req.Password, req.Email, req.Role)
+	if err != nil {
+		return bizerrors.NewBizError(
+			bizerrors.CodeUserCreateFailed,
+			"创建用户失败: "+err.Error(),
+		)
+	}
+	return nil
 }
 
-// UpdateUser 更新用户
 func (s *userService) UpdateUser(req dto.UpdateUserRequest, id uint) error {
 	updates := map[string]interface{}{}
 	if req.Username != "" {
@@ -43,26 +48,47 @@ func (s *userService) UpdateUser(req dto.UpdateUserRequest, id uint) error {
 		updates["password"] = req.Password
 	}
 	if len(updates) == 0 {
-		return fmt.Errorf("没有需要更新的字段")
+		return bizerrors.NewBizError(
+			bizerrors.CodeInvalidParams,
+			"没有需要更新的字段",
+		)
 	}
-	return s.repo.UpdateUser(id, updates)
+
+	err := s.repo.UpdateUser(id, updates)
+	if err != nil {
+		return bizerrors.NewBizError(
+			bizerrors.CodeUserUpdateFailed,
+			"更新用户失败: "+err.Error(),
+		)
+	}
+	return nil
 }
 
-// DeleteUser 删除用户
 func (s *userService) DeleteUser(req dto.DeleteUserRequest) error {
 	if req.ID == 0 {
-		return fmt.Errorf("无效的用户 ID")
+		return bizerrors.NewBizError(
+			bizerrors.CodeInvalidParams,
+			"无效的用户 ID",
+		)
 	}
-	return s.repo.DeleteUser(req.ID)
+	err := s.repo.DeleteUser(req.ID)
+	if err != nil {
+		return bizerrors.NewBizError(
+			bizerrors.CodeUserDeleteFailed,
+			"用户删除失败: "+err.Error(),
+		)
+	}
+	return nil
 }
 
-// GetUserByID 根据 ID 获取用户
 func (s *userService) GetUserByID(id uint) (*dto.UserResponse, error) {
 	user, err := s.repo.GetUserById(id)
 	if err != nil {
-		return nil, err
+		return nil, bizerrors.NewBizError(
+			bizerrors.CodeUserNotFound,
+			"用户不存在: "+err.Error(),
+		)
 	}
-
 	return &dto.UserResponse{
 		ID:       user.ID,
 		Username: user.Username,
@@ -71,7 +97,13 @@ func (s *userService) GetUserByID(id uint) (*dto.UserResponse, error) {
 	}, nil
 }
 
-// CountUsers 统计用户总数
 func (s *userService) CountUsers() (int64, error) {
-	return s.repo.CountUser()
+	count, err := s.repo.CountUser()
+	if err != nil {
+		return 0, bizerrors.NewBizError(
+			bizerrors.CodeServerError,
+			"统计用户总数失败: "+err.Error(),
+		)
+	}
+	return count, nil
 }

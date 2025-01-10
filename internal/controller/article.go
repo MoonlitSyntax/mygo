@@ -1,13 +1,12 @@
 package controller
 
 import (
+	"github.com/gin-gonic/gin"
 	"mygo/internal/dto"
 	"mygo/internal/service"
 	"mygo/internal/util"
-	"mygo/pkg/err_code"
-	"mygo/pkg/response"
-
-	"github.com/gin-gonic/gin"
+	"mygo/pkg/bizerrors"
+	"mygo/pkg/response" // 统一响应包
 )
 
 type ArticleController struct {
@@ -21,87 +20,72 @@ func NewArticleController(articleService service.ArticleService) *ArticleControl
 func (c *ArticleController) CreateArticle(ctx *gin.Context) {
 	var req dto.CreateArticleRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.NewResponse(ctx, err_code.InvalidParams.WithDetails(err.Error()), nil)
+		// 参数绑定失败 => 可以直接返回 BizError(CodeInvalidParams)
+		response.NewResponse(ctx, bizerrors.NewBizError(bizerrors.CodeInvalidParams, "请求参数错误: "+err.Error()), nil)
 		return
 	}
 
-	if err := c.articleService.CreateArticle(req); err != nil {
-		response.NewResponse(ctx, err_code.ArticleCreateFailed.WithDetails(err.Error()), nil)
-		return
-	}
-
-	response.NewResponse(ctx, err_code.Success, nil)
+	err := c.articleService.CreateArticle(req)
+	response.NewResponse(ctx, err, gin.H{"msg": "文章创建成功"})
 }
 
 func (c *ArticleController) UpdateArticle(ctx *gin.Context) {
-	id := ctx.Param("id")
-	articleID, err := util.StringToUint(id)
-	if err != nil {
-		response.NewResponse(ctx, err_code.InvalidParams.WithDetails("Invalid article ID"), nil)
+	idStr := ctx.Param("id")
+	articleID, parseErr := util.StringToUint(idStr)
+	if parseErr != nil {
+		response.NewResponse(ctx, bizerrors.NewBizError(bizerrors.CodeInvalidParams, "无效的文章ID"), nil)
 		return
 	}
 
 	var req dto.UpdateArticleRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.NewResponse(ctx, err_code.InvalidParams.WithDetails(err.Error()), nil)
+		response.NewResponse(ctx, bizerrors.NewBizError(bizerrors.CodeInvalidParams, "请求参数错误: "+err.Error()), nil)
 		return
 	}
-
 	req.ID = articleID
-	if err := c.articleService.UpdateArticle(req); err != nil {
-		response.NewResponse(ctx, err_code.ArticleUpdateFailed.WithDetails(err.Error()), nil)
-		return
-	}
 
-	response.NewResponse(ctx, err_code.Success, nil)
+	err := c.articleService.UpdateArticle(req)
+	response.NewResponse(ctx, err, gin.H{"msg": "文章更新成功"})
 }
 
 func (c *ArticleController) DeleteArticle(ctx *gin.Context) {
-	id := ctx.Param("id")
-	articleID, err := util.StringToUint(id)
-	if err != nil {
-		response.NewResponse(ctx, err_code.InvalidParams.WithDetails("Invalid article ID"), nil)
+	idStr := ctx.Param("id")
+	articleID, parseErr := util.StringToUint(idStr)
+	if parseErr != nil {
+		response.NewResponse(ctx, bizerrors.NewBizError(bizerrors.CodeInvalidParams, "无效的文章ID"), nil)
 		return
 	}
 
 	req := dto.DeleteArticleRequest{ID: articleID}
-	if err := c.articleService.DeleteArticle(req); err != nil {
-		response.NewResponse(ctx, err_code.ArticleDeleteFailed.WithDetails(err.Error()), nil)
-		return
-	}
-
-	response.NewResponse(ctx, err_code.Success, nil)
+	err := c.articleService.DeleteArticle(req)
+	response.NewResponse(ctx, err, gin.H{"msg": "文章删除成功"})
 }
 
 func (c *ArticleController) GetArticleByID(ctx *gin.Context) {
-	id := ctx.Param("id")
-	articleID, err := util.StringToUint(id)
-	if err != nil {
-		response.NewResponse(ctx, err_code.InvalidParams.WithDetails("Invalid article ID"), nil)
+	idStr := ctx.Param("id")
+	articleID, parseErr := util.StringToUint(idStr)
+	if parseErr != nil {
+		response.NewResponse(ctx, bizerrors.NewBizError(bizerrors.CodeInvalidParams, "无效的文章ID"), nil)
 		return
 	}
 
 	article, err := c.articleService.GetArticleByID(articleID)
-	if err != nil {
-		response.NewResponse(ctx, err_code.ArticleNotFound.WithDetails(err.Error()), nil)
-		return
-	}
-
-	response.NewResponse(ctx, err_code.Success, article)
+	response.NewResponse(ctx, err, gin.H{
+		"msg":     "文章获取成功",
+		"article": article,
+	})
 }
 
-func (c *ArticleController) GetArticles(ctx *gin.Context) {
+func (c *ArticleController) GetArticlesByPage(ctx *gin.Context) {
 	var req dto.GetArticlesByPageRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		response.NewResponse(ctx, err_code.InvalidParams.WithDetails(err.Error()), nil)
+		response.NewResponse(ctx, bizerrors.NewBizError(bizerrors.CodeInvalidParams, "请求参数错误: "+err.Error()), nil)
 		return
 	}
 
 	articles, err := c.articleService.GetArticlesByPage(req)
-	if err != nil {
-		response.NewResponse(ctx, err_code.ServerError.WithDetails(err.Error()), nil)
-		return
-	}
-
-	response.NewResponse(ctx, err_code.Success, articles)
+	response.NewResponse(ctx, err, gin.H{
+		"msg":      "获取文章列表成功",
+		"articles": articles,
+	})
 }

@@ -9,6 +9,8 @@ type MetaDataRepository interface {
 	GetAllArticleMetadata() ([]model.ArticleMetadata, error)
 	GetArticleMetadataByCategory(categoryID uint) ([]model.ArticleMetadata, error)
 	GetArticleMetadataByTag(tagID uint) ([]model.ArticleMetadata, error)
+	GetArticleMetadataByPage(limit, offset int) ([]model.ArticleMetadata, error)
+	CountAllArticleMetadata() (int64, error)
 }
 type metaDataRepository struct {
 	db *gorm.DB
@@ -41,4 +43,22 @@ func (r *metaDataRepository) GetArticleMetadataByCategory(categoryID uint) ([]mo
 		Where("category_id = ?", categoryID).
 		Find(&articleMeta)
 	return articleMeta, res.Error
+}
+
+func (r *metaDataRepository) GetArticleMetadataByPage(limit, offset int) ([]model.ArticleMetadata, error) {
+	var articleMeta []model.ArticleMetadata
+	res := r.db.Model(&model.Article{}).
+		Select("id, title, slug, description, created_at, updated_at").
+		Limit(limit).
+		Offset(offset).
+		Find(&articleMeta)
+	return articleMeta, res.Error
+}
+
+// CountAllArticleMetadata 统计总数
+func (r *metaDataRepository) CountAllArticleMetadata() (int64, error) {
+	var count int64
+	// 统计表 article 的记录数
+	res := r.db.Model(&model.Article{}).Count(&count)
+	return count, res.Error
 }

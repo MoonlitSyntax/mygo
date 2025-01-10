@@ -1,11 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"mygo/internal/dto"
 	"mygo/internal/repository"
+	"mygo/pkg/bizerrors"
 )
 
+// CategoryService 接口
 type CategoryService interface {
 	CreateCategory(req dto.CreateCategoryRequest) error
 	UpdateCategory(req dto.UpdateCategoryRequest, id uint) error
@@ -23,32 +24,63 @@ func NewCategoryService(repo repository.CategoryRepository) CategoryService {
 	return &categoryService{repo: repo}
 }
 
-// CreateCategory 创建分类
 func (s *categoryService) CreateCategory(req dto.CreateCategoryRequest) error {
-	return s.repo.CreateCategory(req.Name)
+	err := s.repo.CreateCategory(req.Name)
+	if err != nil {
+		return bizerrors.NewBizError(
+			bizerrors.CodeCategoryCreateFailed,
+			"分类创建失败: "+err.Error(),
+		)
+	}
+	return nil
 }
 
-// UpdateCategory 更新分类
 func (s *categoryService) UpdateCategory(req dto.UpdateCategoryRequest, id uint) error {
 	if req.Name == "" {
-		return fmt.Errorf("分类名称不能为空")
+		// 参数错误
+		return bizerrors.NewBizError(
+			bizerrors.CodeInvalidParams,
+			"分类名称不能为空",
+		)
 	}
-	return s.repo.UpdateCategory(id, req.Name)
+
+	err := s.repo.UpdateCategory(id, req.Name)
+	if err != nil {
+		return bizerrors.NewBizError(
+			bizerrors.CodeCategoryUpdateFailed,
+			"分类更新失败: "+err.Error(),
+		)
+	}
+	return nil
 }
 
-// DeleteCategory 删除分类
 func (s *categoryService) DeleteCategory(req dto.DeleteCategoryRequest) error {
 	if req.ID == 0 {
-		return fmt.Errorf("无效的分类 ID")
+		// 参数错误
+		return bizerrors.NewBizError(
+			bizerrors.CodeInvalidParams,
+			"无效的分类 ID",
+		)
 	}
-	return s.repo.DeleteCategory(req.ID)
+
+	err := s.repo.DeleteCategory(req.ID)
+	if err != nil {
+		return bizerrors.NewBizError(
+			bizerrors.CodeCategoryDeleteFailed,
+			"分类删除失败: "+err.Error(),
+		)
+	}
+	return nil
 }
 
-// GetCategoryByID 根据 ID 获取分类
 func (s *categoryService) GetCategoryByID(id uint) (*dto.CategoryResponse, error) {
 	category, err := s.repo.GetCategory(id)
 	if err != nil {
-		return nil, err
+		// 也可以判断是否 gorm.ErrRecordNotFound -> CodeCategoryNotFound
+		return nil, bizerrors.NewBizError(
+			bizerrors.CodeCategoryNotFound,
+			"分类不存在: "+err.Error(),
+		)
 	}
 
 	return &dto.CategoryResponse{
@@ -57,11 +89,13 @@ func (s *categoryService) GetCategoryByID(id uint) (*dto.CategoryResponse, error
 	}, nil
 }
 
-// GetAllCategories 获取所有分类
 func (s *categoryService) GetAllCategories() ([]dto.CategoryResponse, error) {
 	categories, err := s.repo.GetAllCategory()
 	if err != nil {
-		return nil, err
+		return nil, bizerrors.NewBizError(
+			bizerrors.CodeServerError,
+			"获取所有分类失败: "+err.Error(),
+		)
 	}
 
 	var responses []dto.CategoryResponse
@@ -71,11 +105,16 @@ func (s *categoryService) GetAllCategories() ([]dto.CategoryResponse, error) {
 			Name: category.Name,
 		})
 	}
-
 	return responses, nil
 }
 
-// CountCategories 统计分类总数
 func (s *categoryService) CountCategories() (int64, error) {
-	return s.repo.CountCategory()
+	count, err := s.repo.CountCategory()
+	if err != nil {
+		return 0, bizerrors.NewBizError(
+			bizerrors.CodeServerError,
+			"统计分类失败: "+err.Error(),
+		)
+	}
+	return count, nil
 }

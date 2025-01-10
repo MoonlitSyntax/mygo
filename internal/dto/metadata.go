@@ -15,5 +15,12 @@ type ArticleMetadataResponse struct {
 // ArticleMetadataListResponse 文章元数据列表响应
 type ArticleMetadataListResponse struct {
 	Metadata []ArticleMetadataResponse `json:"metadata"`
-	Total    int                       `json:"total"`
+	Total    int                       `json:"total"`     // 符合条件的数据总数
+	Page     int                       `json:"page"`      // 当前页码
+	PageSize int                       `json:"page_size"` // 每页条数
+}
+
+type GetArticleMetadataPageRequest struct {
+	Page     int `form:"page" binding:"gte=1"`      // 页码
+	PageSize int `form:"page_size" binding:"gte=1"` // 每页条数
 }
